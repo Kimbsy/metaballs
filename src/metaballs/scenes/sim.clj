@@ -76,9 +76,13 @@
 (defn update-sim
   "Called each frame, updates the current scene"
   [state]
-  (update state
-          :metaballs
-          (partial map update-metaball)))
+  (if (< 180 (-> state :metaballs first :pos first))
+    (assoc state
+           :metaballs
+           (init-metaballs))
+    (update state
+            :metaballs
+            (partial map update-metaball))))
 
 (defn init
   "Initialise this scene"
@@ -87,3 +91,4 @@
    :update-fn update-sim
    :mouse-pressed-fns [qpbutton/handle-buttons-pressed]
    :mouse-released-fns [qpbutton/handle-buttons-released]})
+clojure.core/abs
