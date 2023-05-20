@@ -12,7 +12,8 @@
 (defn setup
   "The initial state of the game"
   []
-  {:metaballs (sim/init-metaballs)})
+  {:metaballs (sim/init-metaballs)
+   :draw-boundaries? false})
 
 (defn init-scenes
   "Map of scenes in the game"

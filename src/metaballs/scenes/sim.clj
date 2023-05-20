@@ -9,7 +9,7 @@
 ;; Satisfying threshold value found by experimentation
 (def threshold 0.9)
 
-(defn mb-fn
+(defn falloff-fn
   "Generate a metaball falloff function based on it's current position
   and size"
   [{[x0 y0] :pos :keys [size] :as mb}]
@@ -25,7 +25,7 @@
   (let [mb {:pos pos
             :vel vel
             :size size}]
-    (assoc mb :fn (mb-fn mb))))
+    (assoc mb :fn (falloff-fn mb))))
 
 (defn init-metaballs
   "Describe the initial metaballs"
@@ -40,27 +40,40 @@
   [{:keys [pos vel] :as metaball}]
   (as-> metaball mb
     (assoc mb :pos (map + pos vel))
-    (assoc mb :fn (mb-fn mb))))
+    (assoc mb :fn (falloff-fn mb))))
+
+(defn pos-val
+  "Get the sum of all metaball falloff functions for a position"
+  [{:keys [metaballs]} pos]
+  (reduce + (map (fn [mb] ((:fn mb) pos)) metaballs)))
+
+(defn boundary?
+  "A pixel should be drawn as a boundary if the sum of all metaball
+  falloff functions is very close to the threshold value"
+  [val]
+  (< -0.1 (- threshold val) 0.1))
 
 (defn filled?
   "A pixel should be filled if the sum of all metaball falloff functions
   for that position is greater than the threshold value"
-  [{:keys [metaballs]} pos]
-  (<= threshold
-      (reduce + (map (fn [mb] ((:fn mb) pos)) metaballs))))
+  [val]
+  (<= threshold val))
 
 (defn draw-sim
   "Called each frame, draws the current scene to the screen"
-  [state]
+  [{:keys [draw-boundaries?] :as state}]
   ;; get the pixel Array so we can force new values with `aset-int`
   (let [pxs (q/pixels)]
     (doall
      (map (fn [[x y :as pos]]
             ;; create an integer color based on whether the pixel
             ;; should be filled
-            (let [c (apply q/color (if (filled? state pos)
-                                     common/light-green
-                                     common/dark-green))]
+            (let [val (pos-val state pos)
+                  rgb (cond
+                        (and draw-boundaries? (boundary? val)) common/pink
+                        (filled? val) common/light-green
+                        :else common/dark-green)
+                  c (apply q/color rgb)]
 
               ;; jam it in the pixel array
               (aset-int pxs (+ (* y (q/width)) x) c)))
@@ -84,11 +97,16 @@
             :metaballs
             (partial map update-metaball))))
 
+(defn toggle-boundaries
+  "Toggle whether to draw metaball boundaries"
+  [state _e]
+  (update state :draw-boundaries? not))
+
 (defn init
   "Initialise this scene"
   []
   {:draw-fn draw-sim
    :update-fn update-sim
-   :mouse-pressed-fns [qpbutton/handle-buttons-pressed]
-   :mouse-released-fns [qpbutton/handle-buttons-released]})
+   :mouse-pressed-fns [toggle-boundaries]
+   :key-pressed-fns [toggle-boundaries]})
 clojure.core/abs

@@ -1,6 +1,6 @@
 # metaballs
 
-Simple metaballs simulation using quip
+Simple metaballs simulation using quip. Press any key to toggle displaying metaball boundaries.
 
 ## How does it work?
 
