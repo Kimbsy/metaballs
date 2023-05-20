@@ -1,4 +1,4 @@
-(defproject metaballs "0.1.0-SNAPSHOT"
+(defproject metaballs "0.1.0"
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [quip "2.0.2"]]
   :main ^:skip-aot metaballs.core
