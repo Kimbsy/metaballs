@@ -25,7 +25,8 @@
             :size           [200 200]
             :setup          setup
             :init-scenes-fn init-scenes
-            :current-scene  :sim}))
+            :current-scene  :sim
+            :frame-rate     10000}))
 
 (defn -main
   [& args]
